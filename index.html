@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Flower Activity</title>
+    <!-- Tailwind CSS for basic styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling */
+            font-family: 'Inter', sans-serif; /* Recommended font */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure full viewport height */
+            background-color: #f0f0f0; /* Fallback background */
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background-image: url('Background.png'); /* Your background image */
+            background-size: cover; /* Cover the entire container */
+            background-position: center; /* Center the background image */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 1rem; /* Rounded corners */
+            overflow: hidden; /* Ensure nothing spills out */
+        }
+
+        #flower-image {
+            position: absolute; /* Position the flower relative to the game container */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for horizontal centering */
+            bottom: 10%; /* Adjusted to move the flower higher, onto the 'blue part' */
+            width: 20%; /* Responsive width for the flower */
+            max-width: 250px; /* Maximum size for the flower */
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.1s ease-out; /* Smooth click animation */
+            border-radius: 0.5rem; /* Slightly rounded corners for the image itself */
+        }
+
+        #flower-image:active {
+            transform: translateX(-50%) scale(0.95); /* Shrink slightly on click while maintaining horizontal center */
+        }
+
+        /* Basic modal for messages instead of alert() */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 100; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container" class="relative">
+        <img id="flower-image" src="Flower_transparent.png" alt="Flower">
+    </div>
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <p id="modalMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        // Get references to the image and sound elements
+        const flowerImage = document.getElementById('flower-image');
+        const defaultFlowerSrc = 'Flower_transparent.png';
+        const singingFlowerSrc = 'Flower_singing_transparent.png';
+
+        // Create an Audio object for the sound effect
+        const soundEffect = new Audio('Arcade sound.wav');
+
+        // Get references to the modal elements
+        const messageModal = document.getElementById('messageModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const closeButton = document.querySelector('.close-button');
+
+        // Function to show a message in the modal
+        function showMessage(message) {
+            modalMessage.textContent = message;
+            messageModal.style.display = 'flex'; // Use flex to center
+        }
+
+        // Function to hide the modal
+        function hideMessage() {
+            messageModal.style.display = 'none';
+        }
+
+        // Event listener for the close button
+        closeButton.addEventListener('click', hideMessage);
+
+        // Close the modal if the user clicks anywhere outside of the modal content
+        window.addEventListener('click', (event) => {
+            if (event.target == messageModal) {
+                hideMessage();
+            }
+        });
+
+        // Add a click event listener to the flower image
+        flowerImage.addEventListener('click', () => {
+            // Change the image source to the singing flower
+            flowerImage.src = singingFlowerSrc;
+
+            // Play the sound effect
+            soundEffect.play().catch(e => {
+                console.error("Error playing sound:", e);
+                // Inform user if sound failed to play (e.g., due to autoplay policy)
+                showMessage("Sound playback failed. Please click anywhere on the page to enable sound.");
+            });
+
+            // Calculate delay based on sound duration, or default to 1 second
+            const delay = soundEffect.duration && !isNaN(soundEffect.duration) && isFinite(soundEffect.duration) ?
+                          soundEffect.duration * 1000 : 1000;
+
+            // After a delay equal to the sound's duration, change the image back to the default flower
+            setTimeout(() => {
+                flowerImage.src = defaultFlowerSrc;
+            }, delay); // Using dynamic delay based on sound duration
+        });
+
+        // Optional: Preload images and sound (for smoother experience)
+        function preloadAssets() {
+            const imagesToLoad = [defaultFlowerSrc, singingFlowerSrc, 'Background.png'];
+            imagesToLoad.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+
+            // Attempt to load sound to ensure it's ready, might still need user interaction
+            soundEffect.load();
+        }
+
+        // Call preload function when the window loads
+        window.onload = preloadAssets;
+
+    </script>
+</body>
+</html>
